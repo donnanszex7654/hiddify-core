@@ -430,7 +430,7 @@ func BuildConfig(opt ConfigOptions, input option.Options) (*option.Options, erro
 		}
 		out.Tag = "Hiddify Warp ✅"
 		if opt.Warp.Mode == "warp_over_proxy" {
-			out.WireGuardOptions.Detour = OutboundURLTestTag
+			out.WireGuardOptions.Detour = OutboundSelectTag
 			OutboundMainProxyTag = out.Tag
 		} else {
 			out.WireGuardOptions.Detour = OutboundDirectTag
