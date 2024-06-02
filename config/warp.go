@@ -1,11 +1,14 @@
 package config
 
 import (
+	context "context"
 	"encoding/base64"
 	"fmt"
 	"net/netip"
 	"os"
+	"time"
 
+	"github.com/bepass-org/warp-plus/ipscanner"
 	"github.com/bepass-org/warp-plus/warp"
 	C "github.com/sagernet/sing-box/constant"
 
@@ -146,6 +149,7 @@ func GenerateWarpInfo(license string, oldAccountId string, oldAccessToken string
 func patchWarp(base *option.Outbound, configOpt *ConfigOptions, final bool) error {
 	if base.Type == C.TypeCustom {
 		if warp, ok := base.CustomOptions["warp"].(map[string]interface{}); ok {
+			fmt.Printf("WarpConfig: %v\n", warp)
 			key, _ := warp["key"].(string)
 			host, _ := warp["host"].(string)
 			port, _ := warp["port"].(uint16)
@@ -182,19 +186,28 @@ func patchWarp(base *option.Outbound, configOpt *ConfigOptions, final bool) erro
 
 	if final && base.Type == C.TypeWireGuard {
 		host := base.WireGuardOptions.Server
-
 		if host == "default" || host == "random" || host == "auto" || isBlockedDomain(host) {
+			fmt.Println("Auto selecting warp endpoint")
 			if base.WireGuardOptions.Detour != "" {
-				base.WireGuardOptions.Server = "162.159.192.1"
+				Addrport := generateServerAndPort(&base.WireGuardOptions)
+				addr := Addrport.Addr().String()
+				port := Addrport.Port()
+				base.WireGuardOptions.Server = addr
+				if base.WireGuardOptions.ServerPort == 0 {
+					port := warp.RandomWarpPort()
+					base.WireGuardOptions.ServerPort = port
+				} else {
+					base.WireGuardOptions.ServerPort = port
+				}
 			} else {
 				randomIpPort, _ := warp.RandomWarpEndpoint(true, false)
 				base.WireGuardOptions.Server = randomIpPort.Addr().String()
+				if base.WireGuardOptions.ServerPort == 0 {
+					port := warp.RandomWarpPort()
+					base.WireGuardOptions.ServerPort = port
+				}
 			}
 
-		}
-		if base.WireGuardOptions.ServerPort == 0 {
-			port := warp.RandomWarpPort()
-			base.WireGuardOptions.ServerPort = port
 		}
 
 		if base.WireGuardOptions.Detour != "" {
@@ -211,4 +224,26 @@ func patchWarp(base *option.Outbound, configOpt *ConfigOptions, final bool) erro
 	}
 
 	return nil
+}
+
+func generateServerAndPort(warpConfig *T.WireGuardOutboundOptions) netip.AddrPort {
+	scanner := ipscanner.NewScanner(
+		ipscanner.WithLogger(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))),
+		ipscanner.WithWarpPing(),
+		ipscanner.WithWarpPrivateKey(warpConfig.PrivateKey),
+		ipscanner.WithWarpPeerPublicKey(warpConfig.PeerPublicKey),
+		ipscanner.WithUseIPv4(true),
+		ipscanner.WithUseIPv6(false),
+		ipscanner.WithMaxDesirableRTT(1000*time.Millisecond),
+		ipscanner.WithCidrList(warp.WarpPrefixes()),
+		ipscanner.WithIPQueueSize(0xffff),
+	)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	scanner.Run(ctx)
+	<-ctx.Done()
+
+	ipList := scanner.GetAvailableIPs()
+	fmt.Println("Available IPs: ", ipList)
+	return ipList[0].AddrPort
 }
