@@ -1,20 +1,19 @@
 package config
 
 import (
-	context "context"
 	"encoding/base64"
 	"fmt"
+	"net"
 	"net/netip"
 	"os"
-	"time"
 
-	"github.com/bepass-org/warp-plus/ipscanner"
 	"github.com/bepass-org/warp-plus/warp"
 	C "github.com/sagernet/sing-box/constant"
 
 	// "github.com/bepass-org/wireguard-go/warp"
 	"log/slog"
 
+	"github.com/peanut996/CloudflareWarpSpeedTest/task"
 	"github.com/sagernet/sing-box/option"
 	T "github.com/sagernet/sing-box/option"
 )
@@ -190,14 +189,14 @@ func patchWarp(base *option.Outbound, configOpt *ConfigOptions, final bool) erro
 			fmt.Println("Auto selecting warp endpoint")
 			if base.WireGuardOptions.Detour != "" {
 				Addrport := generateServerAndPort(&base.WireGuardOptions)
-				addr := Addrport.Addr().String()
-				port := Addrport.Port()
-				base.WireGuardOptions.Server = addr
-				if base.WireGuardOptions.ServerPort == 0 {
+				addr := Addrport.IP
+				port := Addrport.Port
+				base.WireGuardOptions.Server = addr.String()
+				if base.WireGuardOptions.ServerPort != 0 {
 					port := warp.RandomWarpPort()
 					base.WireGuardOptions.ServerPort = port
 				} else {
-					base.WireGuardOptions.ServerPort = port
+					base.WireGuardOptions.ServerPort = uint16(port)
 				}
 			} else {
 				randomIpPort, _ := warp.RandomWarpEndpoint(true, false)
@@ -226,24 +225,28 @@ func patchWarp(base *option.Outbound, configOpt *ConfigOptions, final bool) erro
 	return nil
 }
 
-func generateServerAndPort(warpConfig *T.WireGuardOutboundOptions) netip.AddrPort {
-	scanner := ipscanner.NewScanner(
-		ipscanner.WithLogger(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))),
-		ipscanner.WithWarpPing(),
-		ipscanner.WithWarpPrivateKey(warpConfig.PrivateKey),
-		ipscanner.WithWarpPeerPublicKey(warpConfig.PeerPublicKey),
-		ipscanner.WithUseIPv4(true),
-		ipscanner.WithUseIPv6(false),
-		ipscanner.WithMaxDesirableRTT(1000*time.Millisecond),
-		ipscanner.WithCidrList(warp.WarpPrefixes()),
-		ipscanner.WithIPQueueSize(0xffff),
-	)
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	scanner.Run(ctx)
-	<-ctx.Done()
 
-	ipList := scanner.GetAvailableIPs()
-	fmt.Println("Available IPs: ", ipList)
-	return ipList[0].AddrPort
+func generateServerAndPort(warpConfig *T.WireGuardOutboundOptions) *net.UDPAddr {
+	task.InitRandSeed()
+	task.InitHandshakePacket()
+	task.QuickMode = true
+
+	fmt.Printf("CloudflareWarpSpeedTest\n\n")
+
+	pingData := task.NewWarping().Run().FilterDelay().FilterLossRate()
+	pingData.Print()
+	if len(pingData) == 0 {
+		// port, _ := warp.RandomWarpEndpoint(true, false)
+		return nil
+	}
+	fmt.Printf("Selected IP: %v\n", pingData[0].PingData.IP)
+	return pingData[0].PingData.IP
+}
+
+func udpAddrToAddrPort(udpAddr *net.UDPAddr) (netip.AddrPort, error) {
+	ip, ok := netip.AddrFromSlice(udpAddr.IP)
+	if !ok {
+		return netip.AddrPort{}, fmt.Errorf("invalid IP address")
+	}
+	return netip.AddrPortFrom(ip, uint16(udpAddr.Port)), nil
 }
