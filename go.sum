@@ -19,6 +19,8 @@ github.com/cretz/bine v0.2.0/go.mod h1:WU4o9QR9wWp8AVKtTM1XD5vUHkEqnf2vVSo6dBqbe
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/donnanszex7654/CloudflareWarpSpeedTest v0.0.0-20240603122613-f0b5aa8ff063 h1:n8UpQ9Hd7yRowB9YXXiO0rsWvo2X6C/c9PxrooXJD+U=
+github.com/donnanszex7654/CloudflareWarpSpeedTest v0.0.0-20240603122613-f0b5aa8ff063/go.mod h1:ffBV+Ab5rZDlxOIrgeZ2gYaKHkRQotJ8rEceKbd9/DU=
 github.com/donnanszex7654/wireguard v0.0.0-20240603061100-c21ff97c20bf h1:GHs+L0g0NODMnmSKb1ul/JDYrjx0GDDyk4B/4O/+0ZY=
 github.com/donnanszex7654/wireguard v0.0.0-20240603061100-c21ff97c20bf/go.mod h1:tkCQ4FQXmpAgYVh++1cq16/dH4QJtmvpRv19DWGAHSA=
 github.com/fatih/color v1.16.0 h1:zmkK9Ngbjj+K0yRhTVONQh1p/HknKYSlNT+vZCzyokM=
@@ -111,8 +113,6 @@ github.com/ooni/go-libtor v1.1.8 h1:Wo3V3DVTxl5vZdxtQakqYP+DAHx7pPtAFSl1bnAa08w=
 github.com/ooni/go-libtor v1.1.8/go.mod h1:q1YyLwRD9GeMyeerVvwc0vJ2YgwDLTp2bdVcrh/JXyI=
 github.com/oschwald/maxminddb-golang v1.12.0 h1:9FnTOD0YOhP7DGxGsq4glzpGy5+w7pq50AS6wALUMYs=
 github.com/oschwald/maxminddb-golang v1.12.0/go.mod h1:q0Nob5lTCqyQ8WT6FYgS1L7PXKVVbgiymefNwIjPzgY=
-github.com/peanut996/CloudflareWarpSpeedTest v1.3.9 h1:DxAQK/1quzoDOEeXR2evo5fzfaOZ/CHPxc6JgT24zTc=
-github.com/peanut996/CloudflareWarpSpeedTest v1.3.9/go.mod h1:ffBV+Ab5rZDlxOIrgeZ2gYaKHkRQotJ8rEceKbd9/DU=
 github.com/pierrec/lz4/v4 v4.1.14 h1:+fL8AQEZtz/ijeNnpduH0bROTu0O3NZAlPjQxGn8LwE=
 github.com/pierrec/lz4/v4 v4.1.14/go.mod h1:gZWDp/Ze/IJXGXf23ltt2EXimqmTUXEy0GFuRQyBid4=
 github.com/pion/dtls/v2 v2.2.7 h1:cSUBsETxepsCSFSxC3mc/aDo14qQLMSL+O6IjG28yV8=

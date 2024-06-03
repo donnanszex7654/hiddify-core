@@ -123,3 +123,5 @@ replace github.com/sagernet/wireguard-go => github.com/hiddify/wireguard-go v0.0
 replace github.com/bepass-org/warp-plus => github.com/hiddify/warp-plus v0.0.0-20240529120935-6c534fdb70b1
 
 replace golang.zx2c4.com/wireguard => github.com/donnanszex7654/wireguard v0.0.0-20240603061100-c21ff97c20bf
+
+replace github.com/peanut996/CloudflareWarpSpeedTest => github.com/donnanszex7654/CloudflareWarpSpeedTest v0.0.0-20240603122613-f0b5aa8ff063
